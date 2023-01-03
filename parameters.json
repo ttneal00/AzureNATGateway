@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "envPrefix": {
+            "value": "tst"
+        },
+        "natGWname": {
+            "value": "NGW"
+        },
+        "defaultNsgname": {
+            "value": "defaultNSG"
+        },
+        "computeRgName": {
+            "value": "computeRG"
+        },
+        "networkRGName":{
+            "value": "networkRG"
+        },
+        "location":{
+            "value": "eastus"
+        },
+        "idleTimeoutInMinutes":{
+            "value": 4
+        },
+        "prefixLength":{
+            "value": 31
+        },
+        "publicIPAddressVersion":{
+            "value": "IPv4"
+        },
+        "publicIPAllocationMethod":{
+            "value": "Static"
+        },
+        "sku":{
+            "value": "Standard"
+        },
+        "Spoke01Name":{
+            "value": "Spoke01"
+        },
+        "Spoke01Network": {
+            "value": "10.120."
+        }
+        
+        
+
+    }
+
+}
