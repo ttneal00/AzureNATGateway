@@ -174,4 +174,29 @@ module Desktop1 'Modules/Compute.bicep' = {
   ]
 }
 
+module Desktop2 'Modules/Compute.bicep' = {
+  scope: resourceGroup(computeRG.name)
+  name: '${envPrefix}${Spoke01Name}-D02'
+  params: {
+    adminPassword: adminPassword
+    imageOffer: 'WindowsServer'
+    imageOSsku: '2012-Datacenter'
+    imagePublisher: 'MicrosoftWindowsServer'
+    imageVersion: 'latest'
+    location: location
+    sakind: 'StorageV2'
+    storageAccountPrefix: 'tst'
+    storageskuname: 'Standard_LRS'
+    subnetid: Spoke01S02.outputs.subnetid
+    vmName: '${Spoke01Name}-D02'
+    vmSize: 'Standard_B2ms'
+    vNetName: Spoke01.name
+    vnetrgname: computeRG.name
+  }
+
+  dependsOn: [
+    Spoke01S02
+  ]
+}
+
 
