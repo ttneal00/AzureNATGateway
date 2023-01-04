@@ -26,7 +26,7 @@ resource publicipprefix 'Microsoft.Network/publicIPPrefixes@2021-05-01' = {
   name: '${natgwname}-prefix'
   location: location
   sku: {
-    name:  'Standard'
+    name:  sku
   }
   properties: {
     prefixLength: prefixLength
@@ -49,6 +49,10 @@ resource publicip 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
 
 resource natgw 'Microsoft.Network/natGateways@2022-07-01' = {
   name: natgwname
+  location: location
+  sku: {
+    name: sku
+  }
    properties: {
     idleTimeoutInMinutes: idleTimeoutInMinutes
     publicIpAddresses: [

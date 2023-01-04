@@ -1,6 +1,9 @@
+targetScope = 'subscription'
+
 param computeRgName string
 param networkRgName string
 param location string
+param envPrefix string
 
 // NAT Gateway Params and Variables
 
@@ -19,9 +22,14 @@ var Spoke01CIDR = '${Spoke01Network}0.0/16'
 var Spoke01S01CIDR = '${Spoke01Network}0.0/24'
 var Spoke01S02CIDR = '${Spoke01Network}5.0/24'
 var AzureBastionS01S03 = '${Spoke01Network}50.0/26'
+param domainNameLabel string
 
 //NSG Params and Vars
 param defaultNsgName string 
+
+//Desktop Params and Vars
+@secure()
+param adminPassword string
 
 module computeRG 'Modules/resourcegroup.bicep' = {
   scope: subscription()
@@ -42,7 +50,9 @@ module networkRG 'Modules/resourcegroup.bicep' = {
 }
 
 module natGw 'Modules/natgatway.bicep' = {
+  scope: resourceGroup(networkRG.name)
   name: natGWname
+
   params: {
     idleTimeoutInMinutes: idleTimeoutInMinutes
     location: location
@@ -65,14 +75,19 @@ module Spoke01 'Modules/VirtualNetwork.bicep' = {
 }
 
 module  azureBastionNsg 'Modules/bastionnsg.bicep' = {
-  name: azureBastionName
+  scope: resourceGroup(networkRG.name)
+  name: '${azureBastionName}-NSG'
   params: {
     bastionHostName: azureBastionName
     location: location
   }
+  dependsOn: [
+    
+  ]
 }
 
 module defaultNsg 'Modules/defaultnsg.bicep' = {
+  scope: resourceGroup(networkRG.name)
   name: defaultNsgName
   params: {
     location: location
@@ -80,6 +95,7 @@ module defaultNsg 'Modules/defaultnsg.bicep' = {
   }
 }
 module Spoke01S01 'Modules/subnet.bicep' = {
+  scope: resourceGroup(networkRG.name)
   name: '${Spoke01Name}-SN01'
   params: {
     addressprefix: Spoke01S01CIDR
@@ -87,10 +103,13 @@ module Spoke01S01 'Modules/subnet.bicep' = {
     natGatewayId: natGw.outputs.natGwId 
     nsgid: defaultNsg.outputs.subnetid
   }
+ 
+
 }
 
 module Spoke01S02 'Modules/subnet.bicep' = {
-  name: '${Spoke01Name}-SN01'
+  scope: resourceGroup(networkRG.name)
+  name: '${Spoke01Name}-SN02'
   params: {
     addressprefix: Spoke01S02CIDR
     subnetname: '${Spoke01Name}/${Spoke01Name}-SN02'
@@ -98,17 +117,61 @@ module Spoke01S02 'Modules/subnet.bicep' = {
     nsgid: defaultNsg.outputs.subnetid
 
   }
+  dependsOn: [
+    Spoke01S01
+  ]
 }
 
-module AzureBastion 'Modules/subnet.bicep' = {
-  name: azureBastionName
+module AzureBastionSN 'Modules/subnet.bicep' = {
+  scope: resourceGroup(networkRG.name)
+  name: '${azureBastionName}-SN02'
   params: {
     addressprefix: AzureBastionS01S03
-    subnetname: azureBastionName
-    natGatewayId: ' '
-    nsgid: azureBastionName
+    subnetname: '${Spoke01Name}/${azureBastionName}'
+    natGatewayId: natGw.outputs.natGwId
+    nsgid: azureBastionNsg.outputs.bastionHostNSGId
 
   }
+  dependsOn: [
+    Spoke01S02
+    azureBastionNsg
+  ]
+}
+
+module BastionHost 'Modules/bastionhost.bicep' = {
+  scope: resourceGroup(networkRG.name)
+  name: azureBastionName
+  params: {
+    domainNameLabel: domainNameLabel
+    location: location
+    publicIPAddressName: '${azureBastionName}-Pip'
+    subnetid: AzureBastionSN.outputs.subnetid
+  }
+}
+
+module Desktop1 'Modules/Compute.bicep' = {
+  scope: resourceGroup(computeRG.name)
+  name: '${envPrefix}${Spoke01Name}-D01'
+  params: {
+    adminPassword: adminPassword
+    imageOffer: 'WindowsServer'
+    imageOSsku: '2012-Datacenter'
+    imagePublisher: 'MicrosoftWindowsServer'
+    imageVersion: 'latest'
+    location: location
+    sakind: 'StorageV2'
+    storageAccountPrefix: 'tst'
+    storageskuname: 'Standard_LRS'
+    subnetid: Spoke01S01.outputs.subnetid
+    vmName: '${Spoke01Name}-D01'
+    vmSize: 'Standard_B2ms'
+    vNetName: Spoke01.name
+    vnetrgname: computeRG.name
+  }
+
+  dependsOn: [
+    Spoke01S01
+  ]
 }
 
 

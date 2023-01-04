@@ -2,7 +2,7 @@
 @description(' Name of the vnet the vmnic will be hosted')
 param vNetName string 
 @description(' Name of the subnet the vmnic will be hosted')
-param subnetName string
+param subnetid string
 @description(' Name of the resourcegroup hosting the vnet')
 param vnetrgname string
 
@@ -152,7 +152,7 @@ resource vmnic 'Microsoft.Network/networkInterfaces@2021-08-01' = {
         name: '${vmName}-IPconfig'
         properties: {
           subnet:{
-            id: resourceId(vnetrgname,'Microsoft.Network/virtualNetworks/subnets',vNetName, subnetName)
+            id: subnetid
           }
         }
       }

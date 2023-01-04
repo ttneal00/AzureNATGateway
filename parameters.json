@@ -8,13 +8,13 @@
         "natGWname": {
             "value": "NGW"
         },
-        "defaultNsgname": {
+        "defaultNsgName": {
             "value": "defaultNSG"
         },
         "computeRgName": {
             "value": "computeRG"
         },
-        "networkRGName":{
+        "networkRgName":{
             "value": "networkRG"
         },
         "location":{
@@ -40,8 +40,11 @@
         },
         "Spoke01Network": {
             "value": "10.120."
+        },
+        "domainNameLabel":{
+            "value": "tstlab"
         }
-        
+    
         
 
     }
